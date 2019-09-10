@@ -1,0 +1,199 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+	<link rel="stylesheet" href="index.css">
+<title>EpicGamer Games</title>
+</head>
+<body>
+<header>
+	<nav>
+        <ul>
+          <li><a href="index.html"><span class="egg"> EGG </span></a></li>
+          <li><a href="stafflist.html"><span class="nav"> Our Staff </span></a></li>
+          <li><a href="games.html"><span class="nav"> Our Games</span></a>
+			<ul>
+				<li><a href="games.html#SE">Galactic Empire</a></li>
+				<li><a href="games.html#FOTE">Flight of the Eagles</a></li>
+				<li><a href="games.html#A">Aileron</a></li>			
+			</ul>	
+			  </li>
+			<li><a href="demo.html"><span class="nav"> Demo Game</span></a></li>
+			<li><a href="trailer.html"><span class="nav"> Trailer</span></a></li>
+          <li><a href="contact.html"><span class="nav"> Contact Us</span></a></li>
+        </ul>
+</nav>
+</header>
+	
+<audio autoplay>
+	<source src="Lilibulero.mp3">
+</audio>
+	
+<article class="OB">
+<h1> Online Breakout </h1>
+	
+	<!--This is like the games screen-->
+	<canvas id="myCanvas" width="550" height="320" ></canvas>
+
+
+	
+	
+<script>
+//I thought i needed something kinda special for the 5th page so i made a game using past experience in last years C course and a tutorial on the Mozilla website
+//The tutorial can be found at https://developer.mozilla.org/en-US/docs/Games/Tutorials/2D_Breakout_game_pure_JavaScript
+//I got rid of score, change colour, speed, and size of objects to give the website a clean minimalist design, but otherwise i follow the tutorial exactly
+//Var tells the computer about all the different elements, like the ball, bricks, and paddle
+var canvas = document.getElementById("myCanvas");
+var ctx = canvas.getContext("2d");
+var ballRadius = 10;
+var x = canvas.width/2;
+var y = canvas.height-30;
+var dx = 3;
+var dy = -3;
+var paddleHeight = 10;
+var paddleWidth = 150;
+var paddleX = (canvas.width-paddleWidth)/2;
+var rightPressed = false;
+var leftPressed = false;
+var brickRowCount = 10;
+var brickColumnCount = 6;
+var brickWidth = 40;
+var brickHeight = 10;
+var brickPadding = 10;
+var brickOffsetTop = 30;
+var brickOffsetLeft = 30;
+
+var bricks = [];
+for(var c=0; c<brickColumnCount; c++) {
+  bricks[c] = [];
+  for(var r=0; r<brickRowCount; r++) {
+    bricks[c][r] = { x: 0, y: 0, status: 1 };
+  }
+}
+	
+	
+//This tells the computer to observe whether the client is pressing a button or not
+document.addEventListener("keydown", keyDownHandler, false);
+document.addEventListener("keyup", keyUpHandler, false);
+	
+//This links pressing right arrow to going right
+function keyDownHandler(e) {
+    if(e.key == "Right" || e.key == "ArrowRight") {
+        rightPressed = true;
+    }
+	
+//This links pressing left arrow to going left
+    else if(e.key == "Left" || e.key == "ArrowLeft") {
+        leftPressed = true;
+    }
+}
+
+//This is so the paddle stop going right when you press the key
+function keyUpHandler(e) {
+    if(e.key == "Right" || e.key == "ArrowRight") {
+        rightPressed = false;
+    }
+    else if(e.key == "Left" || e.key == "ArrowLeft") {
+        leftPressed = false;
+    }
+}
+
+//This tells the website what to do when the ball hits something else
+function collisionDetection() {
+  for(var c=0; c<brickColumnCount; c++) {
+    for(var r=0; r<brickRowCount; r++) {
+      var b = bricks[c][r];
+      if(b.status == 1) {
+        if(x > b.x && x < b.x+brickWidth && y > b.y && y < b.y+brickHeight) {
+          dy = -dy;
+          b.status = 0;
+        }
+      }
+    }
+  }
+}
+
+
+//These draw functions give the ball, bricks, and paddles shape and colour
+function drawBall() {
+  ctx.beginPath();
+  ctx.arc(x, y, ballRadius, 0, Math.PI*2);
+  ctx.fillStyle = "#DD0000";
+  ctx.fill();
+  ctx.closePath();
+}
+function drawPaddle() {
+  ctx.beginPath();
+  ctx.rect(paddleX, canvas.height-paddleHeight, paddleWidth, paddleHeight);
+  ctx.fillStyle = "#00DD00";
+  ctx.fill();
+  ctx.closePath();
+}
+function drawBricks() {
+  for(var c=0; c<brickColumnCount; c++) {
+    for(var r=0; r<brickRowCount; r++) {
+      if(bricks[c][r].status == 1) {
+        var brickX = (r*(brickWidth+brickPadding))+brickOffsetLeft;
+        var brickY = (c*(brickHeight+brickPadding))+brickOffsetTop;
+        bricks[c][r].x = brickX;
+        bricks[c][r].y = brickY;
+        ctx.beginPath();
+        ctx.rect(brickX, brickY, brickWidth, brickHeight);
+        ctx.fillStyle = "#0000DD";
+        ctx.fill();
+        ctx.closePath();
+      }
+    }
+  }
+}
+
+
+//This is the endscreen
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawBricks();
+  drawBall();
+  drawPaddle();
+  collisionDetection();
+
+  if(x + dx > canvas.width-ballRadius || x + dx < ballRadius) {
+    dx = -dx;
+  }
+  if(y + dy < ballRadius) {
+    dy = -dy;
+  }
+  else if(y + dy > canvas.height-ballRadius) {
+    if(x > paddleX && x < paddleX + paddleWidth) {
+      dy = -dy;
+    }
+    else {
+      ctx.fillText("Game over, reload to play again!");
+		
+    }
+  }
+
+//Paddle speed
+  if(rightPressed && paddleX < canvas.width-paddleWidth) {
+    paddleX += 10;
+  }
+  else if(leftPressed && paddleX > 0) {
+    paddleX -= 10;
+  }
+
+  x += dx;
+  y += dy;
+}
+
+//framerate
+var interval = setInterval(draw, 10);
+</script>
+	
+	<!--This is just a link back to the same document-->
+	<h3><a href="demo.html">RELOAD GAME</a></h3>
+	
+</article>
+<footer>
+Copyright EpicGamer Games
+</footer>
+</body>
+</html>
